@@ -15,8 +15,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [kontrak::class, 'index']);
-Route::post('pegawai', [kontrak::class, 'store']);
 Route::get('fetch-pegawai', [kontrak::class, 'show']);
-Route::get('edit-pgw/{id}', [kontrak::class, 'edit']);
-Route::put('update-pgw/{id}', [kontrak::class, 'update']);
-Route::delete('delete-pgw/{id}', [kontrak::class, 'delete']);
