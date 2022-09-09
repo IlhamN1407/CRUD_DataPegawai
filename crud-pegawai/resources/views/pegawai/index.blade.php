@@ -16,22 +16,17 @@
 
                   <div class="form-group mb-3">
                       <label for="">Nama Pegawai</label>
-                      <input type="text" required class="name form-control">
+                      <input type="text" required class="nama_pegawai form-control">
                   </div>
                   <div class="form-group mb-3">
                       <label for="">Alamat</label>
-                      <input type="text" required class="course form-control">
-                  </div>
-                  <div class="form-group mb-3">
-                      <label for="">Kontrak</label>
-                      <input type="text" required class="email form-control">
+                      <input type="text" required class="alamat form-control">
                   </div>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary add_student">Save</button>
+                  <button type="button" class="btn btn-primary tambah_pegawai">Save</button>
               </div>
-
           </div>
       </div>
   </div>
@@ -50,28 +45,20 @@
 
                   <ul id="update_msgList"></ul>
 
-                  <input type="hidden" id="stud_id" />
+                  <input type="hidden" id="pgw_id" />
 
                   <div class="form-group mb-3">
-                      <label for="">Full Name</label>
-                      <input type="text" id="name" required class="form-control">
+                      <label for="">Nama Pegawai</label>
+                      <input type="text" id="nama_pegawai" required class="form-control">
                   </div>
                   <div class="form-group mb-3">
-                      <label for="">Course</label>
-                      <input type="text" id="course" required class="form-control">
-                  </div>
-                  <div class="form-group mb-3">
-                      <label for="">Email</label>
-                      <input type="text" id="email" required class="form-control">
-                  </div>
-                  <div class="form-group mb-3">
-                      <label for="">Phone No</label>
-                      <input type="text" id="phone" required class="form-control">
+                      <label for="">Alamat</label>
+                      <input type="text" id="alamat" required class="form-control">
                   </div>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary update_student">Update</button>
+                  <button type="submit" class="btn btn-primary update_pgw">Update</button>
               </div>
 
           </div>
@@ -85,22 +72,23 @@
       <div class="modal-dialog">
           <div class="modal-content">
               <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">Delete Student Data</h5>
+                  <h5 class="modal-title" id="exampleModalLabel">Hapus data pegawai</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
                   <h4>Confirm to Delete Data ?</h4>
-                  <input type="hidden" id="deleteing_id">
+                  <input type="hidden" id="delete_id">
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary delete_student">Yes Delete</button>
+                  <button type="button" class="btn btn-primary delete_pgw">Yes Delete</button>
               </div>
           </div>
       </div>
   </div>
   {{-- End - Delete Modal --}}
 
+   
   <div class="container py-5">
       <div class="row">
           <div class="col-md-12">
@@ -134,13 +122,14 @@
           </div>
       </div>
   </div>
-
+  
 @endsection
 
 @section('scripts')
 <script>
   $(document).ready(function () {
 
+    
         fetchpegawai();
 
         function fetchpegawai() {
@@ -164,16 +153,165 @@
             });
         }
 
+        $(document).on('click', '.deletebtn', function () {
+            var pgw_id = $(this).val();
+            // console.log(alert(pgw_id));
+            $('#DeleteModal').modal('show');
+            $('#delete_id').val(pgw_id);
+        });
+
+        $(document).on('click','.delete_pgw', function (e) {
+            e.preventDefault();
+
+            $(this).text('deleting..');
+
+            var id_pgw = $('#delete_id').val();
+
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
 
-            $(document).on('click', '.add_student', function (e) {
-              e.preventDefault();
-              console.log('sucess');
+            $.ajax({
+                type: "DELETE",
+                url: "/delete-pgw/"+ id_pgw,
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.status == 404) {
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('.delete_pgw').text('Yes Delete');
+                    } else {
+                        $('#success_message').html("");
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('.delete_pgw').text('Yes Delete');
+                        $('#DeleteModal').modal('hide');
+                        fetchpegawai();
+                    }
+                }
             });
+        });
+        
+        
+        $(document).on('click','.editbtn', function () {
+            var pgw_id = $(this).val();
+            // console.log(alert(pgw_id));
+            $('#editModal').modal('show');
+            $('#pgw_id').val(pgw_id);
+            $.ajax({
+                type: "GET",
+                url: "/edit-pgw/" +pgw_id,
+                success: function (response) {
+                    console.log(response);
+                    if (response.status == 404) {
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#editModal').modal('hide');
+                    } else {
+                        // console.log(response.pegawai.nama_pegawai);
+                        $('#nama_pegawai').val(response.pegawai.nama_pegawai);
+                        $('#alamat').val(response.pegawai.alamat);
+                    }
+                }
+            });
+            $('.btn-close').find('input').val('');
+        });
+        
+        $(document).on('click', '.update_pgw',function (e) {
+            e.preventDefault();
+            $(this).text('updating..');
+
+            var id = $('#pgw_id').val();
+            // console.log(alert(id));
+            var data = {
+                'nama_pegawai': $('#nama_pegawai').val(),
+                'alamat': $('#alamat').val(),
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                type: "PUT",
+                url: "/update-pgw/"+id,
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    if (response.status == 400) {
+                        $('#update_msgList').html("");
+                        $('#update_msgList').addClass('alert alert-danger');
+                        $.each(response.error, function (key, err_value) {
+                            $('#update_msgList').append('<li>' + err_value +
+                                '</li>');
+                        });
+                        $('.update_student').text('Update');
+                    } else {
+                        $('#update_msgList').html("");
+
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#editModal').find('input').val('');
+                        $('.update_pgw').text('Update');
+                        $('#editModal').modal('hide');
+                        fetchpegawai();
+                    }
+                }
+            });
+
+        });
+
+        $(document).on('click', '.tambah_pegawai', function (e) {
+            e.preventDefault();
+        
+            $(this).text('Sending..');
+
+            var data = {
+                'nama_pegawai': $('.nama_pegawai').val(),
+                'alamat': $('.alamat').val(),
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                type: "POST",
+                url: "/pegawai",
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    if (response.status == 400) {
+                        $('#save_msgList').html("");
+                        $('#save_msgList').addClass('alert alert-danger');
+                        $.each(response.error, function (key, err_value) {
+                            $('#save_msgList').append('<li>' + err_value + '</li>');
+                        });
+                        $('.tambah_pegawai').text('Save');
+                    } else {
+                        $('#save_msgList').html("");
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#AddStudentModal').find('input').val('');
+                        $('.tambah_pegawai').text('Save');
+                        $('#AddStudentModal').modal('hide');
+                        fetchpegawai();
+                    }
+                }
+            });
+    });
+
+
+            
   });
 </script>
 @endsection
